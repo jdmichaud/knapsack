@@ -24,7 +24,9 @@ def score(endpoint, requests, caches):
   return score
 
 def valid(Csize, vsizes, caches):
-  return not [size for size in [reduce(lambda x, video: x + vsizes[video], videos, 0) for (cid, videos) in caches] if size > Csize]
+  def add(vsizes, videos):
+    return reduce(lambda x, video: x + vsizes[video], videos, 0)
+  return not [size for size in [add(vsizes, videos) for (cid, videos) in caches] if size > Csize]
 
 def score_endpoints(endpoints, requests, caches):
   return reduce(lambda x, y: x + y, [score(endpoint, requests, caches) for endpoint in endpoints])
