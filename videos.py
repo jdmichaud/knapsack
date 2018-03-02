@@ -17,7 +17,7 @@ def score(endpoint, requests, caches):
     # Filter on the cache which stores the requested video
     caches_with_video = [cid for (cid, videos) in caches if video in videos]
     # Get the latencies of those caches and sort them
-    video_latencies = sorted([latency for (cid, latency) in endpoint.clatencies if cid in caches_with_video])
+    video_latencies = sorted([latency for (cid, latency) in enumerate(endpoint.clatencies) if cid in caches_with_video])
     if (len(video_latencies) != 0):
       # If the video is stored in a cache attached to this point, compute the score
       score += (endpoint.dclatency - video_latencies[0]) * nbr
@@ -53,5 +53,4 @@ if __name__ == '__main__':
       requests.append((vid, eid, nbr))
 
     caches = solve(endpoints, requests, C, Csize)
-    score_endpoints(endpoints, requests, caches)
-  
+    print(score_endpoints(endpoints, requests, caches))
