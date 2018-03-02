@@ -23,13 +23,15 @@ def score(endpoint, requests, caches):
       score += (endpoint.dclatency - video_latencies[0]) * nbr
   return score
 
+def valid(Csize, vsizes, caches):
+  return not [size for size in [reduce(lambda x, video: x + vsizes[video], videos, 0) for (cid, videos) in caches] if size > Csize]
+
 def score_endpoints(endpoints, requests, caches):
   return reduce(lambda x, y: x + y, [score(endpoint, requests, caches) for endpoint in endpoints])
 
 def solve(endpoints, requests, C, Csize):
   caches = [(i, []) for i in range(C)]
   return caches
-
 
 if __name__ == '__main__':
   if (len(sys.argv) != 2):
