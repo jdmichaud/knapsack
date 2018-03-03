@@ -1,7 +1,6 @@
 import sys
 
 def knapsack(entries, capacity, indent=0):
-  print(' ' * indent + '->knapsack!')
   max_weight = 0
   max_content = []
   for entry in entries:
