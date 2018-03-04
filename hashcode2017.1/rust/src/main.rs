@@ -19,10 +19,10 @@ fn usage() {
 fn main() {
   match env::args().nth(1) {
     Some(filename) => {
-      let (parameters, endpoints, requests) = read_input_file(&filename);
+      let (parameters, vsizes, endpoints, requests) = read_input_file(&filename);
       let output_filename = format!("{}.out",
         filename.split(".in").collect::<Vec<&str>>()[0]);
-      write_output_file(&output_filename, &solve(parameters, endpoints, requests));
+      write_output_file(&output_filename, &solve(parameters, vsizes, endpoints, requests));
       ()
     }
     None => {
