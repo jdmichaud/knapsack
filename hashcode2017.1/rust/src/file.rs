@@ -9,6 +9,7 @@ use std::collections::HashMap;
 
 use optimize::CacheConfiguration;
 
+#[derive(Debug, Clone, Copy)]
 pub struct Parameters {
   pub nb_video: usize,
   pub nb_endpoint: usize,
@@ -17,12 +18,14 @@ pub struct Parameters {
   pub cache_size: usize,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Request {
   pub endpoint_id: usize,
   pub video_id: usize,
   pub nb_request: usize,
 }
 
+#[derive(Debug)]
 pub struct Endpoint {
   pub endpoint_id: usize,
   pub latency: usize,
@@ -43,6 +46,7 @@ fn split_line<T>(line: &str) -> Vec<T> where T: FromStr, T::Err: Debug {
 
 pub fn read_input_file(filename: &str) -> (Parameters, Vec<usize>, Vec<Endpoint>, Vec<Request>) {
   let mut file = BufReader::new(File::open(filename).expect("file not found"));
+  // Reading the first line (the parameters)
   let parameters = match split_line::<usize>(&read_line(&mut file).unwrap()).as_slice() {
     &[nb_video, nb_endpoint, nb_request, nb_cache, cache_size] =>
       Parameters { 
@@ -54,6 +58,7 @@ pub fn read_input_file(filename: &str) -> (Parameters, Vec<usize>, Vec<Endpoint>
       },
     _ => unreachable!(),
   };
+  // The list of video sizes
   let vsizes = split_line::<usize>(&read_line(&mut file).unwrap());
   // Load endpoints
   let mut endpoints: Vec<Endpoint> = Vec::new();
@@ -87,7 +92,7 @@ pub fn write_output_file(filename: &str, cache_configuration: &Vec<CacheConfigur
   let mut file = File::create(filename).expect("file not found");
   let non_empty = cache_configuration.iter()
     .filter(|cc| cc.videos.len() != 0).collect::<Vec<&CacheConfiguration>>();
-  file.write_fmt(format_args!("{}", non_empty.len())).unwrap();
+  file.write_fmt(format_args!("{}\n", non_empty.len())).unwrap();
   non_empty.iter()
     .for_each(|cc|
       file.write_fmt(

@@ -31,7 +31,7 @@ def test_unsatisfied_requests():
 # the score is time saved by streaming from the caches rather than the datacenter
 def score(endpoint, requests, caches):
   score = 0
-  # FIlter on the requests from this endpoint
+  # Filter on the requests from this endpoint
   for (video, eid, nbr) in requests_for_endpoint(requests, endpoint):
     # Filter on the cache which stores the requested video
     caches_with_video = [cid for (cid, videos) in caches if video in videos]
