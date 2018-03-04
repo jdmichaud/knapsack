@@ -51,9 +51,6 @@ def valid(Csize, vsizes, caches):
     return reduce(lambda x, video: x + vsizes[video], videos, 0)
   return not [size for size in [add(vsizes, videos) for (cid, videos) in caches] if size > Csize]
 
-def score_endpoints(endpoints, requests, caches):
-  return sum([score(endpoint, requests, caches) for endpoint in endpoints])
-
 def knapsack(endpoint, requests, C, Csize, vsizes, cid):
   if (Csize <= 0 or not requests): return M(0, [])
   # Return the size of the video from request i - 1
@@ -108,36 +105,40 @@ def solve(endpoints, requests, C, Csize, vsizes):
       cache_configurations[cache[0]] += m.result
   return cache_configurations
 
-def printCacheConfig(cache_configurations, file):
-  file.write(f'{len(cache_configurations)}')
+def print_cache_config(cache_configurations, file):
+  nb_used_cache = len([cache for cache in cache_configurations.keys() if cache_configurations[cache]])
+  file.write(f'{nb_used_cache}')
   for cid in sorted(cache_configurations.keys()):
     videos = ' '.join([str(v) for v in cache_configurations[cid]])
     if (videos):
       file.write(f'\n{cid} {videos}')
 
+def read_file(ifile):
+  V, E, R, C, Csize = [int(x) for x in ifile.readline().split(' ')]
+  vsizes = [int(x) for x in ifile.readline().split(' ')]
+  endpoints = []
+  for i in range(E):
+    clatencies = {}
+    dclatency, ncacheconn = [int(x) for x in ifile.readline().split(' ')]
+    for j in range(ncacheconn):
+      cid, clatency = [int(x) for x in ifile.readline().split(' ')]
+      if cid not in clatencies: clatencies[cid] = []
+      clatencies[cid] = clatency
+    endpoints.append(Endpoint(i, dclatency, clatencies))
+  requests = []
+  for i in range(R):
+    vid, eid, nbr = [int(x) for x in ifile.readline().split(' ')]
+    requests.append(Request(vid, eid, nbr))
+  return ((V, E, R, C, Csize), vsizes, endpoints, requests, C, Csize)
+
 if __name__ == '__main__':
   if (len(sys.argv) != 2):
-    print('usage: python knapsack.py inputfile')
+    print('usage: ./solve.py inputfile')
     sys.exit(1)
   with open(sys.argv[1], 'r') as ifile:
-    V, E, R, C, Csize = [int(x) for x in ifile.readline().split(' ')]
-    vsizes = [int(x) for x in ifile.readline().split(' ')]
-    endpoints = []
-    for i in range(E):
-      clatencies = {}
-      dclatency, ncacheconn = [int(x) for x in ifile.readline().split(' ')]
-      for j in range(ncacheconn):
-        cid, clatency = [int(x) for x in ifile.readline().split(' ')]
-        if cid not in clatencies: clatencies[cid] = []
-        clatencies[cid] = clatency
-      endpoints.append(Endpoint(i, dclatency, clatencies))
-    requests = []
-    for i in range(R):
-      vid, eid, nbr = [int(x) for x in ifile.readline().split(' ')]
-      requests.append(Request(vid, eid, nbr))
+    ((V, E, R, C, Csize), vsizes, endpoints, requests, C, Csize) = read_file(ifile)
 
-    # print(score_endpoints(endpoints, requests, caches))
     # print(knapsack(endpoints[0], requests_for_endpoint(requests, endpoints[0]), C, Csize, vsizes, 0))
     with open(f'{sys.argv[1].split(".in")[0]}.out', 'w') as ofile:
-      printCacheConfig(solve(endpoints, requests, C, Csize, vsizes), ofile)
+      print_cache_config(solve(endpoints, requests, C, Csize, vsizes), ofile)
     # print(solve(endpoints, requests, C, Csize, vsizes))
