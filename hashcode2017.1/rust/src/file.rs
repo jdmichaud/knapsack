@@ -68,7 +68,7 @@ pub fn read_input_file(filename: &str) -> (Parameters, Vec<usize>, Vec<Endpoint>
         let mut cache_latencies = HashMap::new();
         for i in 0..nb_cache {
           match split_line(&read_line(&mut file).unwrap()).as_slice() {
-            &[clatency, cache_id] => cache_latencies.insert(cache_id, clatency),
+            &[cache_id, clatency] => cache_latencies.insert(cache_id, clatency),
             _ => unreachable!(),
           };
         }
@@ -102,5 +102,6 @@ pub fn write_output_file(filename: &str, cache_configuration: &Vec<CacheConfigur
           cc.videos.iter().map(|i| i.to_string()).collect::<Vec<String>>().join(" "))
       ).unwrap()
     );
+  file.write(b"\n").unwrap();
   ()
 }

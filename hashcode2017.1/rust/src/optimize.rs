@@ -103,7 +103,7 @@ fn knapsack(
   vsizes: &Vec<usize>,
   cache_id: usize, capacity: usize) -> Vec<usize> {
   // TODO: Restrict the video size check only to requested video from this endpoind
-  if capacity == 0 || requests.len() == 0 || vsizes.iter().filter(|&&s| s >= capacity).sum::<usize>() == 0 {
+  if capacity == 0 || requests.len() == 0 || vsizes.iter().filter(|&&s| s <= capacity).sum::<usize>() == 0 {
     return vec![];
   }
   // Return the weigh of video i - 1
@@ -114,21 +114,23 @@ fn knapsack(
       &vec![CacheConfiguration { cache_id, videos: vec![requests[i - 1].video_id] }])
   };
 
-  let mut m = vec![vec![0; capacity]; 2];
+  let mut m = vec![vec![(0 as usize, vec![]); capacity]; 2];
   for i in 1..requests.len() + 1 {
     for j in 0..capacity {
       if w(i) > j {
-        m[1][j] = m[0][j]
+        m[1][j].0 = m[0][j].0;
+        m[1][j].1 = m[0][j].1.iter().cloned().collect();
       } else {
-        let score_with_video = m[0][j - 1] + v(i);
-        m[1][j] = max(m[0][j], score_with_video);
+        let score_with_video = m[0][j - 1].0 + v(i);
+        m[1][j].0 = max(m[0][j].0, score_with_video);
+        m[1][j].1 = [&m[0][j - 1].1[..], &vec![requests[i - 1].video_id][..]].concat();
       }
     }
     m[0] = Vec::from_iter(m[1].iter().cloned());
-    m[1] = vec![0; capacity];
+    m[1] = vec![(0 as usize, vec![]); capacity];
   }
 
-  Vec::new()
+  m[0].iter().max_by_key(|x| x.0).unwrap().1.iter().cloned().collect()
 }
 
 pub fn solve(
@@ -136,7 +138,7 @@ pub fn solve(
   vsizes: Vec<usize>,
   endpoints: Vec<Endpoint>,
   requests: Vec<Request>) -> Vec<CacheConfiguration> {
-  let cache_configurations: Vec<CacheConfiguration> = Vec::new();
+  let mut cache_configurations: Vec<CacheConfiguration> = Vec::new();
   // HEURISTIC !
   for endpoint in endpoints {
     // HEURISTIC !
@@ -156,6 +158,7 @@ pub fn solve(
       let remaining_capacity: usize = parameters.cache_size.saturating_sub(
         cached_video.iter().map(|v| vsizes[*v]).sum());
       let videos = knapsack(&remaining_requests, &endpoint, &parameters, &vsizes, cache_id, remaining_capacity);
+      cache_configurations.push(CacheConfiguration { cache_id, videos });
     }
   }
   return cache_configurations;
