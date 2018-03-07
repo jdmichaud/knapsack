@@ -97,7 +97,7 @@ pub fn write_output_file(filename: &str, cache_configuration: &Vec<CacheConfigur
     .for_each(|cc|
       file.write_fmt(
         format_args!(
-          "{} {}",
+          "{} {}\n",
           cc.cache_id,
           cc.videos.iter().map(|i| i.to_string()).collect::<Vec<String>>().join(" "))
       ).unwrap()
