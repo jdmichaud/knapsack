@@ -114,9 +114,16 @@ fn knapsack(
       &vec![CacheConfiguration { cache_id, videos: vec![requests[i - 1].video_id] }])
   };
 
+  let total = (requests.len() + 1) * capacity;
+  let mut count = 0;
   let mut m = vec![vec![(0 as usize, vec![]); capacity]; 2];
   for i in 1..requests.len() + 1 {
     for j in 0..capacity {
+      count += 1;
+      if (total / 100) == count {
+        print!(".");
+        count = 0;
+      }
       if w(i) > j {
         m[1][j].0 = m[0][j].0;
         m[1][j].1 = m[0][j].1.iter().cloned().collect();
@@ -138,17 +145,13 @@ pub fn solve(
   vsizes: Vec<usize>,
   endpoints: Vec<Endpoint>,
   requests: Vec<Request>) -> Vec<CacheConfiguration> {
-  let mut cache_configurations: Vec<CacheConfiguration> = Vec::new();
+  let mut cache_configurations: HashMap<usize, Vec<usize>> = HashMap::new();
   // HEURISTIC !
   for endpoint in endpoints {
     // HEURISTIC !
     for (&cache_id, _) in endpoint.cache_latencies.iter() {
       // Retrieve already cached video
-      let cached_video = cache_configurations.iter()
-        .fold(Vec::new(), |mut acc, cc| {
-          acc.extend(cc.videos.iter().cloned());
-          acc
-        });
+      let mut cached_video = cache_configurations.entry(cache_id).or_insert(vec![]);
       // Get the remaining requests on this endpoint which could be cached
       let remaining_requests = requests_for_endpoint(
         &unsatisfied_requests(&requests, &cached_video),
@@ -158,8 +161,11 @@ pub fn solve(
       let remaining_capacity: usize = parameters.cache_size.saturating_sub(
         cached_video.iter().map(|v| vsizes[*v]).sum());
       let videos = knapsack(&remaining_requests, &endpoint, &parameters, &vsizes, cache_id, remaining_capacity);
-      cache_configurations.push(CacheConfiguration { cache_id, videos });
+      cached_video.extend(videos.iter().cloned());
     }
   }
-  return cache_configurations;
+  return cache_configurations
+    .drain()
+    .map(|(k, v)| CacheConfiguration { cache_id: k, videos: v })
+    .collect::<Vec<CacheConfiguration>>();
 }
