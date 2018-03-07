@@ -12,22 +12,12 @@ use file::read_input_file;
 use file::write_output_file;
 use optimize::solve;
 
-fn usage() {
-  println!("usage: ./solve inputfile");
-}
-
 fn main() {
-  match env::args().nth(1) {
-    Some(filename) => {
-      let (parameters, vsizes, endpoints, requests) = read_input_file(&filename);
-      let output_filename = format!("{}.out",
-        filename.split(".in").collect::<Vec<&str>>()[0]);
-      write_output_file(&output_filename, &solve(parameters, vsizes, endpoints, requests));
-      ()
-    }
-    None => {
-      println!("error: missing argument");
-      usage();
-    },
-  };  
+  env::args().skip(1).for_each(|filename| {
+    if env::args().len() > 2 { println!("{}", filename) }
+    let (parameters, vsizes, endpoints, requests) = read_input_file(&filename);
+    let output_filename = format!("{}.out",
+      filename.split(".in").collect::<Vec<&str>>()[0]);
+    write_output_file(&output_filename, &solve(parameters, vsizes, endpoints, requests));
+  });
 }
